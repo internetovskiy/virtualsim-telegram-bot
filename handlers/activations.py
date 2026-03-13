@@ -5,7 +5,7 @@ from services.database import async_session, UserRepository, ActivationRepositor
 from keyboards.inline import (
     activation_control_kb, activations_list_kb, back_to_menu_kb, main_menu_kb
 )
-from utils.helpers import get_cached, format_phone, get_status_text
+from utils.helpers import get_cached, format_phone, get_status_text, apply_markup
 import asyncio
 import logging
 
@@ -162,16 +162,17 @@ async def cb_confirm_order(callback: CallbackQuery, bot: Bot):
 
         activation_id = str(order["activationId"])
         phone_number = order.get("phoneNumber") or order.get("number", "")
-        actual_cost = float(order.get("cost") or order.get("cost_with_markup") or cost)
+        api_cost = float(order.get("cost") or order.get("cost_with_markup") or cost)
+        user_cost = max(cost, apply_markup(api_cost))
 
         async with async_session() as session:
             user_repo = UserRepository(session)
-            await user_repo.update_balance(callback.from_user.id, -actual_cost)
+            await user_repo.update_balance(callback.from_user.id, -user_cost)
 
             act_repo = ActivationRepository(session)
             await act_repo.create(
                 user.id, activation_id, service_code, service_name,
-                country_id, country_name, phone_number, actual_cost,
+                country_id, country_name, phone_number, user_cost,
             )
 
         text = (
@@ -179,7 +180,7 @@ async def cb_confirm_order(callback: CallbackQuery, bot: Bot):
             f"📱 Сервис: <b>{service_name}</b>\n"
             f"🌍 Страна: <b>{country_name}</b>\n"
             f"📞 Номер: <code>{format_phone(phone_number)}</code>\n"
-            f"💰 Списано: <b>${actual_cost:.2f}</b>\n\n"
+            f"💰 Списано: <b>${user_cost:.2f}</b>\n\n"
             f"⏳ <b>Ожидаем SMS...</b>\n"
             f"Код придёт автоматически в течение нескольких минут."
         )
