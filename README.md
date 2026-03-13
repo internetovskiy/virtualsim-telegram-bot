@@ -152,14 +152,6 @@ curl -X POST "https://virtualsim.io/api/v1/orderNumber?api_key=KEY" \
 
 ---
 
-## Ссылки
-
-- [virtualsim.io](https://virtualsim.io) — сайт
-- [@virtualsim_bot](https://t.me/virtualsim_bot) — бот
-- [t.me/virtualsim_chat](https://t.me/virtualsim_chat) — чат
-- [API документация](https://virtualsim.io/api-docs)
-
----
 
 <p align="center">
   <sub>© 2026 VirtualSim</sub>
