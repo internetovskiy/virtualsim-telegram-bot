@@ -16,6 +16,8 @@ class Settings(BaseSettings):
     
     MIN_DEPOSIT: float = 1.0
     MAX_DEPOSIT: float = 1000.0
+
+    BOT_MARKUP_PERCENT: float = 0.0 # Наценка на номера
     
     CACHE_TTL: int = 300
     ACTIVATION_POLL_INTERVAL: int = 5
