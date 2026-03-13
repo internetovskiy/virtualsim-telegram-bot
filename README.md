@@ -62,8 +62,8 @@
 ### Запуск
 
 ```bash
-git clone https://github.com/your-username/virtualsim-bot.git
-cd virtualsim-bot
+git clone https://github.com/internetovskiy/virtualsim-telegram-bot
+cd virtualsim-telegram-bot
 pip install -r requirements.txt
 cp .env.example .env
 python main.py
