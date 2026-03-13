@@ -152,7 +152,3 @@ curl -X POST "https://virtualsim.io/api/v1/orderNumber?api_key=KEY" \
 
 ---
 
-
-<p align="center">
-  <sub>© 2026 VirtualSim</sub>
-</p>
