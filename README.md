@@ -74,19 +74,23 @@ python main.py
 ## Настройка (.env)
 
 ```env
-BOT_TOKEN=токен_бота
-ADMIN_IDS=[ваш_telegram_id]
+BOT_TOKEN=your_telegram_bot_token
+ADMIN_IDS=[your_telegram_id]
 
-VIRTUALSIM_API_KEY=ключ_api
+VIRTUALSIM_API_KEY=your_virtualsim_api_key
 VIRTUALSIM_BASE_URL=https://virtualsim.io/api/v1
 
-CRYPTOBOT_API_KEY=ключ_cryptobot
+CRYPTOBOT_API_KEY=your_cryptobot_api_key
 CRYPTOBOT_BASE_URL=https://pay.crypt.bot/api
 
-DATABASE_URL=sqlite+aiosqlite:///bot.db
+DATABASE_URL=sqlite+aiosqlite:///data/bot.db
+
+# Наценка на номера в процентах (0 = без наценки, 30 = +30%)
+BOT_MARKUP_PERCENT=0
 
 MIN_DEPOSIT=1.0
 MAX_DEPOSIT=1000.0
+
 CACHE_TTL=300
 ACTIVATION_POLL_INTERVAL=5
 ACTIVATION_TIMEOUT=600
