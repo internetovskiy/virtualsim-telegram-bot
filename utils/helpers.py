@@ -20,6 +20,12 @@ async def set_cached(key: str, data: Dict, ttl: int = None):
         await cache_repo.set(key, json.dumps(data, ensure_ascii=False), ttl or settings.CACHE_TTL)
 
 
+def apply_markup(price: float) -> float:
+    if settings.BOT_MARKUP_PERCENT <= 0:
+        return price
+    return round(price * (1 + settings.BOT_MARKUP_PERCENT / 100), 2)
+
+
 def format_balance(amount: float) -> str:
     return f"${amount:.2f}"
 
