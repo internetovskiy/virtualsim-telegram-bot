@@ -8,7 +8,7 @@ from keyboards.inline import (
     services_kb, countries_kb, confirm_order_kb,
     back_to_menu_kb, popular_services_kb, search_results_kb,
 )
-from utils.helpers import get_cached, set_cached
+from utils.helpers import get_cached, set_cached, apply_markup
 from config import settings
 
 router = Router()
@@ -75,13 +75,16 @@ async def get_countries_with_prices(service_code: str) -> list:
                     result.append({
                         "id": int(country_id_str),
                         "name": country_name,
-                        "price": cost,
+                        "price": apply_markup(cost),
                         "count": count,
                     })
 
     result.sort(key=lambda x: x["price"])
     await set_cached(cache_key, result, settings.CACHE_TTL)
     return result
+
+
+# ── Buy number entry point ──────────────────────────────────────────────
 
 @router.callback_query(F.data == "buy_number")
 async def cb_buy_number(callback: CallbackQuery, state: FSMContext):
@@ -110,6 +113,9 @@ async def cb_buy_number(callback: CallbackQuery, state: FSMContext):
         reply_markup=popular_services_kb(popular),
         parse_mode="HTML",
     )
+
+
+# ── Search ──────────────────────────────────────────────────────────────
 
 @router.callback_query(F.data == "svc_search")
 async def cb_search_start(callback: CallbackQuery, state: FSMContext):
@@ -176,6 +182,9 @@ async def cb_search_results_page(callback: CallbackQuery, state: FSMContext):
     await callback.message.edit_reply_markup(reply_markup=search_results_kb(matches, page))
     await callback.answer()
 
+
+# ── Browse all services (paginated) ────────────────────────────────────
+
 @router.callback_query(F.data.startswith("svc_all_page_"))
 async def cb_all_services_page(callback: CallbackQuery):
     page = int(callback.data.split("_")[3])
@@ -196,6 +205,9 @@ async def cb_services_page(callback: CallbackQuery):
     services = await get_services_cached()
     await callback.message.edit_reply_markup(reply_markup=services_kb(services, page))
     await callback.answer()
+
+
+# ── Service selected → show countries ──────────────────────────────────
 
 @router.callback_query(F.data.startswith("svc_") & ~F.data.startswith("svc_page_") & ~F.data.startswith("svc_search") & ~F.data.startswith("svc_all_"))
 async def cb_service_selected(callback: CallbackQuery, state: FSMContext):
@@ -226,6 +238,9 @@ async def cb_service_selected(callback: CallbackQuery, state: FSMContext):
     except Exception as e:
         await callback.message.edit_text(f"❌ Ошибка: {str(e)}", reply_markup=back_to_menu_kb())
 
+
+# ── Country pagination ─────────────────────────────────────────────────
+
 @router.callback_query(F.data.startswith("cnt_page_"))
 async def cb_countries_page(callback: CallbackQuery):
     parts = callback.data.split("_")
@@ -237,6 +252,9 @@ async def cb_countries_page(callback: CallbackQuery):
         reply_markup=countries_kb(countries, service_code, page),
     )
     await callback.answer()
+
+
+# ── Country search ─────────────────────────────────────────────────────
 
 @router.callback_query(F.data.startswith("cnt_search_"))
 async def cb_country_search_start(callback: CallbackQuery, state: FSMContext):
@@ -320,6 +338,9 @@ async def cb_country_search_page(callback: CallbackQuery, state: FSMContext):
         reply_markup=country_search_results_kb(matches, service_code, page),
     )
     await callback.answer()
+
+
+# ── Country selected → confirm order ───────────────────────────────────
 
 @router.callback_query(F.data.startswith("cnt_") & ~F.data.startswith("cnt_page_") & ~F.data.startswith("cnt_search_") & ~F.data.startswith("cnt_spage_"))
 async def cb_country_selected(callback: CallbackQuery):
