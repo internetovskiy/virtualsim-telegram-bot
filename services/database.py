@@ -1,12 +1,63 @@
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
-from sqlalchemy import String, Float, Integer, Boolean, DateTime, Text, select, update
+from __future__ import annotations
+
+import logging
 from datetime import datetime
-from typing import Optional, List
+from pathlib import Path
+from typing import List, Optional
+from urllib.parse import unquote
+
+from sqlalchemy import Boolean, DateTime, Float, Integer, String, Text, select, update
+from sqlalchemy.engine import make_url
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+
 from config import settings
 
+logger = logging.getLogger(__name__)
 
-engine = create_async_engine(settings.DATABASE_URL, echo=False)
+
+def _normalize_sqlite_url(url: str) -> str:
+    """
+    Ensure parent directory exists and use an absolute file path.
+    Fixes sqlite3.OperationalError: unable to open database file on Windows/Linux
+    when DATABASE_URL points at e.g. data/bot.db but ./data/ was never created;
+    also avoids cwd surprises by resolving relative paths to absolute.
+    """
+    if "sqlite" not in url or "aiosqlite" not in url:
+        return url
+    low = url.lower()
+    if ":memory:" in low or "mode=memory" in low:
+        return url
+    try:
+        u = make_url(url)
+    except Exception:
+        return url
+    drv = getattr(u, "drivername", "") or ""
+    if not drv.startswith("sqlite"):
+        return url
+    path_part = u.database
+    if path_part is None or str(path_part) in ("", ":memory:"):
+        return url
+    path_part = unquote(str(path_part))
+    if path_part.lower().startswith("file:"):
+        path_part = path_part[5:].lstrip("/")
+    p = Path(path_part)
+    if not p.is_absolute():
+        p = (Path.cwd() / p).resolve()
+    else:
+        p = p.resolve()
+    try:
+        p.parent.mkdir(parents=True, exist_ok=True)
+    except OSError as e:
+        logger.warning("Could not create directory for database %s: %s", p, e)
+        raise
+    return f"sqlite+aiosqlite:///{p.as_posix()}"
+
+
+DATABASE_URL = _normalize_sqlite_url(settings.DATABASE_URL)
+logger.info("Database file: %s", DATABASE_URL.replace("sqlite+aiosqlite:///", "", 1))
+
+engine = create_async_engine(DATABASE_URL, echo=False)
 async_session = async_sessionmaker(engine, expire_on_commit=False)
 
 
