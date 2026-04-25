@@ -135,8 +135,6 @@ ACTIVATION_TIMEOUT=600
 
 Бот ходит в публичный **JSON API** (`/api/v1/...`) с параметром `api_key`, как в [документации](https://virtualsim.io/api-docs): `getServices`, `getCountries`, `getPrices`, `orderNumber`, `getStatus`, `setStatus` и т.д. Клиент в `services/virtualsim.py` добавляет таймауты, разбор ошибок и корректную обработку ответов не-JSON / 401 / 429.
 
-Пользовательский баланс в боте (после оплаты через CryptoBot) и баланс аккаунта VirtualSim по `VIRTUALSIM_API_KEY` — разные вещи: на стороне сайта списывается баланс владельца ключа. Следите, чтобы на аккаунте VirtualSim было достаточно средств под заказы бота.
-
 Примеры `curl`:
 
 ```bash
