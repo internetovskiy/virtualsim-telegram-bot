@@ -62,8 +62,8 @@
 ### Запуск
 
 ```bash
-git clone https://github.com/internetovskiy/virtualsim-telegram-bot
-cd virtualsim-telegram-bot
+git clone https://github.com/your-username/virtualsim-bot.git
+cd virtualsim-bot
 pip install -r requirements.txt
 cp .env.example .env
 python main.py
@@ -74,23 +74,19 @@ python main.py
 ## Настройка (.env)
 
 ```env
-BOT_TOKEN=your_telegram_bot_token
-ADMIN_IDS=[your_telegram_id]
+BOT_TOKEN=токен_бота
+ADMIN_IDS=[ваш_telegram_id]
 
-VIRTUALSIM_API_KEY=your_virtualsim_api_key
+VIRTUALSIM_API_KEY=ключ_api
 VIRTUALSIM_BASE_URL=https://virtualsim.io/api/v1
 
-CRYPTOBOT_API_KEY=your_cryptobot_api_key
+CRYPTOBOT_API_KEY=ключ_cryptobot
 CRYPTOBOT_BASE_URL=https://pay.crypt.bot/api
 
-DATABASE_URL=sqlite+aiosqlite:///data/bot.db
-
-# Наценка на номера в процентах (0 = без наценки, 30 = +30%)
-BOT_MARKUP_PERCENT=0
+DATABASE_URL=sqlite+aiosqlite:///bot.db
 
 MIN_DEPOSIT=1.0
 MAX_DEPOSIT=1000.0
-
 CACHE_TTL=300
 ACTIVATION_POLL_INTERVAL=5
 ACTIVATION_TIMEOUT=600
@@ -137,22 +133,31 @@ ACTIVATION_TIMEOUT=600
 
 ## API
 
-Бот работает через публичный [VirtualSim API](https://virtualsim.io/api-docs). Его можно использовать и напрямую:
+Бот ходит в публичный **JSON API** (`/api/v1/...`) с параметром `api_key`, как в [документации](https://virtualsim.io/api-docs): `getServices`, `getCountries`, `getPrices`, `orderNumber`, `getStatus`, `setStatus` и т.д. Клиент в `services/virtualsim.py` добавляет таймауты, разбор ошибок и корректную обработку ответов не-JSON / 401 / 429.
+
+Пользовательский баланс в боте (после оплаты через CryptoBot) и баланс аккаунта VirtualSim по `VIRTUALSIM_API_KEY` — разные вещи: на стороне сайта списывается баланс владельца ключа. Следите, чтобы на аккаунте VirtualSim было достаточно средств под заказы бота.
+
+Примеры `curl`:
 
 ```bash
-# Список сервисов
 curl "https://virtualsim.io/api/v1/getServices?api_key=KEY"
-
-# Цены на Telegram
 curl "https://virtualsim.io/api/v1/getPrices?service=tg&api_key=KEY"
-
-# Заказ номера
 curl -X POST "https://virtualsim.io/api/v1/orderNumber?api_key=KEY" \
   -H "Content-Type: application/json" \
   -d '{"service": "tg", "country": 0}'
 ```
 
-Документация: [virtualsim.io/api-docs](https://virtualsim.io/api-docs)
+---
+
+## Ссылки
+
+- [virtualsim.io](https://virtualsim.io) — сайт
+- [@virtualsim_bot](https://t.me/virtualsim_bot) — бот
+- [t.me/virtualsim_chat](https://t.me/virtualsim_chat) — чат
+- [API документация](https://virtualsim.io/api-docs)
 
 ---
 
+<p align="center">
+  <sub>© 2026 VirtualSim</sub>
+</p>
