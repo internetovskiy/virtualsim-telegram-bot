@@ -56,8 +56,17 @@ async def cache_cleanup_task():
 
 
 async def main():
+    if not (settings.BOT_TOKEN or "").strip():
+        logger.error("BOT_TOKEN is not set. Copy .env.example to .env and set BOT_TOKEN.")
+        return
+    if not (settings.VIRTUALSIM_API_KEY or "").strip():
+        logger.error("VIRTUALSIM_API_KEY is not set. Get an API key in the VirtualSim profile (API).")
+        return
+    if not settings.ADMIN_IDS:
+        logger.warning("ADMIN_IDS is empty — /admin and operator commands will be unavailable.")
+
     bot = Bot(
-        token=settings.BOT_TOKEN,
+        token=settings.BOT_TOKEN.strip(),
         default=DefaultBotProperties(parse_mode=ParseMode.HTML)
     )
 
