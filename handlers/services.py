@@ -32,6 +32,9 @@ async def get_services_cached() -> list:
     result = await virtualsim.get_services()
     services = []
 
+    if isinstance(result, dict) and result.get("error"):
+        return []
+
     if isinstance(result, dict) and "services" in result:
         raw = result["services"]
         if isinstance(raw, list):
@@ -56,6 +59,15 @@ async def get_countries_with_prices(service_code: str) -> list:
     countries_result = await virtualsim.get_countries()
     prices_result = await virtualsim.get_prices(service=service_code)
 
+    if (
+        not isinstance(countries_result, dict)
+        or countries_result.get("error")
+        or "countries" not in countries_result
+    ):
+        return []
+    if not isinstance(prices_result, dict) or prices_result.get("error"):
+        return []
+
     countries_map = {}
     if isinstance(countries_result, dict) and "countries" in countries_result:
         for c in countries_result["countries"]:
@@ -64,7 +76,7 @@ async def get_countries_with_prices(service_code: str) -> list:
     result = []
     if isinstance(prices_result, dict):
         for country_id_str, services_data in prices_result.items():
-            if country_id_str in ("error",):
+            if country_id_str in ("error", "_http_status", "raw", "message", "detail"):
                 continue
             if isinstance(services_data, dict) and service_code in services_data:
                 data = services_data[service_code]
