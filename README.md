@@ -83,7 +83,8 @@ VIRTUALSIM_BASE_URL=https://virtualsim.io/api/v1
 CRYPTOBOT_API_KEY=ключ_cryptobot
 CRYPTOBOT_BASE_URL=https://pay.crypt.bot/api
 
-DATABASE_URL=sqlite+aiosqlite:///bot.db
+# Relative path = относительно каталога, откуда запускают python. Папка создаётся сама, например data/:
+DATABASE_URL=sqlite+aiosqlite:///data/bot.db
 
 MIN_DEPOSIT=1.0
 MAX_DEPOSIT=1000.0
