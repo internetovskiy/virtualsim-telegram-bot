@@ -201,7 +201,10 @@ async def cb_admin_stats(callback: CallbackQuery):
 
     try:
         api_balance = await virtualsim.get_balance()
-        api_bal_text = f"${api_balance.get('balance', 0):.2f}"
+        if api_balance.get("error"):
+            api_bal_text = f"❌ {api_balance.get('error')}"
+        else:
+            api_bal_text = f"${float(api_balance.get('balance', 0)):.2f}"
     except Exception:
         api_bal_text = "❌ Ошибка"
 
@@ -226,7 +229,11 @@ async def cb_admin_api_balance(callback: CallbackQuery):
 
     try:
         result = await virtualsim.get_balance()
-        text = f"💰 <b>Баланс VirtualSim API</b>\n\n${result.get('balance', 0):.2f} {result.get('currency', 'USD')}"
+        if result.get("error"):
+            text = f"❌ <b>Ошибка API</b>\n{result.get('error')}"
+        else:
+            cur = result.get("currency", "USD")
+            text = f"💰 <b>Баланс VirtualSim API</b>\n\n${float(result.get('balance', 0)):.2f} {cur}"
     except Exception as e:
         text = f"❌ Ошибка получения баланса: {str(e)}"
 
