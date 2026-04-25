@@ -63,6 +63,14 @@ async def poll_activation(
             if not isinstance(result, dict):
                 continue
 
+            if result.get("error"):
+                code = result.get("_http_status", 0)
+                if code == 404:
+                    break
+                if code == 429:
+                    await asyncio.sleep(8)
+                continue
+
             sms_received = result.get("smsReceived", False)
             messages = result.get("messages") or []
             api_status = result.get("status", "")
@@ -153,8 +161,12 @@ async def cb_confirm_order(callback: CallbackQuery, bot: Bot):
 
         order = await virtualsim.order_number(service_code, country_id)
 
-        if "activationId" not in order:
-            error_msg = order.get("message") or order.get("error") or "Неизвестная ошибка"
+        if order.get("error") or "activationId" not in order:
+            error_msg = (
+                order.get("error")
+                or order.get("message")
+                or "Неизвестная ошибка"
+            )
             await callback.message.edit_text(
                 f"❌ Ошибка заказа: {error_msg}", reply_markup=back_to_menu_kb(),
             )
@@ -267,11 +279,12 @@ async def cb_refresh_activation(callback: CallbackQuery):
 
     await callback.answer("🔄 Обновляем...")
 
+    activation = None
     try:
         result = await virtualsim.get_status(activation_id)
 
         sms_code = None
-        if isinstance(result, dict):
+        if isinstance(result, dict) and not result.get("error"):
             messages = result.get("messages") or []
             if messages:
                 sms_code = messages[-1].get("text")
@@ -304,7 +317,10 @@ async def cb_resend_sms(callback: CallbackQuery):
     await callback.answer("📨 Запрашиваем новую SMS...")
 
     try:
-        await virtualsim.set_status(activation_id, 3)
+        r = await virtualsim.set_status(activation_id, 3)
+        if r.get("error"):
+            await callback.answer(f"❌ {r.get('error')}", show_alert=True)
+            return
         await callback.answer("✅ Запрос отправлен. Ожидайте новую SMS.", show_alert=True)
     except Exception as e:
         await callback.answer(f"❌ Ошибка: {str(e)}", show_alert=True)
@@ -315,7 +331,10 @@ async def cb_complete_activation(callback: CallbackQuery):
     activation_id = callback.data[13:]
 
     try:
-        await virtualsim.set_status(activation_id, 6)
+        r = await virtualsim.set_status(activation_id, 6)
+        if r.get("error"):
+            await callback.answer(f"❌ {r.get('error')}", show_alert=True)
+            return
 
         async with async_session() as session:
             act_repo = ActivationRepository(session)
@@ -341,7 +360,10 @@ async def cb_cancel_activation(callback: CallbackQuery):
     activation_id = callback.data[11:]
 
     try:
-        await virtualsim.set_status(activation_id, 8)
+        r = await virtualsim.set_status(activation_id, 8)
+        if r.get("error"):
+            await callback.answer(f"❌ {r.get('error')}", show_alert=True)
+            return
 
         async with async_session() as session:
             act_repo = ActivationRepository(session)
