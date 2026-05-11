@@ -78,7 +78,7 @@ BOT_TOKEN=токен_бота
 ADMIN_IDS=[ваш_telegram_id]
 
 VIRTUALSIM_API_KEY=ключ_api
-VIRTUALSIM_BASE_URL=https://virtualsim.io/api/v1
+VIRTUALSIM_BASE_URL=https://virtualsim.io/stubs/handler_api.php
 
 CRYPTOBOT_API_KEY=ключ_cryptobot
 CRYPTOBOT_BASE_URL=https://pay.crypt.bot/api
@@ -134,16 +134,15 @@ ACTIVATION_TIMEOUT=600
 
 ## API
 
-Бот ходит в публичный **JSON API** (`/api/v1/...`) с параметром `api_key`, как в [документации](https://virtualsim.io/api-docs): `getServices`, `getCountries`, `getPrices`, `orderNumber`, `getStatus`, `setStatus` и т.д. Клиент в `services/virtualsim.py` добавляет таймауты, разбор ошибок и корректную обработку ответов не-JSON / 401 / 429.
+Бот ходит в текущий (`/stubs/handler_api.php`) с параметрами `api_key` и `action`, как в [документации](https://virtualsim.io/api-docs): `getServicesList`, `getCountries`, `getPrices`, `getNumberV2`, `getStatus`, `setStatus` и т.д. Клиент в `services/virtualsim.py` нормализует текстовые ответы (`ACCESS_BALANCE`, `ACCESS_NUMBER`, `STATUS_OK`) в словари, которые используют handlers бота.
+
 
 Примеры `curl`:
 
 ```bash
-curl "https://virtualsim.io/api/v1/getServices?api_key=KEY"
-curl "https://virtualsim.io/api/v1/getPrices?service=tg&api_key=KEY"
-curl -X POST "https://virtualsim.io/api/v1/orderNumber?api_key=KEY" \
-  -H "Content-Type: application/json" \
-  -d '{"service": "tg", "country": 0}'
+curl "https://virtualsim.io/stubs/handler_api.php?action=getServicesList&api_key=KEY"
+curl "https://virtualsim.io/stubs/handler_api.php?action=getPrices&service=tg&api_key=KEY"
+curl "https://virtualsim.io/stubs/handler_api.php?action=getNumberV2&service=tg&country=0&api_key=KEY"
 ```
 
 ---
