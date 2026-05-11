@@ -14,7 +14,7 @@ class Settings(BaseSettings):
     BOT_TOKEN: str = ""
     ADMIN_IDS: List[int] = []
     VIRTUALSIM_API_KEY: str = ""
-    VIRTUALSIM_BASE_URL: str = "https://virtualsim.io/api/v1"
+    VIRTUALSIM_BASE_URL: str = "https://virtualsim.io/stubs/handler_api.php"
     CRYPTOBOT_API_KEY: str = ""
     CRYPTOBOT_BASE_URL: str = "https://pay.crypt.bot/api"
     DATABASE_URL: str = "sqlite+aiosqlite:///bot.db"
